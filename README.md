@@ -34,3 +34,5 @@ Each folder is comprised of three elements:
 
 Algorithm: Turns unit graphs into graphs through "unit graphs to input.cpp"
 
+Graph and Test Instance Explanation: Brief theoretical explanation about graph models and main parameters in our optimization model.
+
