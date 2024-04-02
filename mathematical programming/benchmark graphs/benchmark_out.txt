@@ -1,0 +1,2 @@
+file Node seed edge dens tau1 tau2 mu avgdeg mincom 
+bench-400-12 400 12 8619 0.1077375 3 2 0.4 35 80.0
