@@ -9,13 +9,16 @@ codes:
   3.1. Up to last column: Unit graph generation parameters
   3.2. Last column: Random seed for "unit graphs to input.cpp"
 
-4- Erdos rhenyi
+4- Erdős-Rényi
 
 unit graphs: Unit graphs obtained by with the help of unit graph generation codes. Graphs are as follows:
 
 1-albert barabasi
 2-benchmark
 3-forest fire
+
+5-mathematical models
+6-connectivity
 
 graphs: Input folder for our optimization experiments. 
 
