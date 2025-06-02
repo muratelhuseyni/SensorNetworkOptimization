@@ -391,15 +391,10 @@ void SolveLazy(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, 
 		yneighborsum.end();
 	}
 
-	/*for (int i = 0; i < N; ++i)
-		for (int j = 0; j < N; ++j)
-			if (adj[i][j] == 1)
-				model.add(u[i] - u[j] + k*Z[i][j] <= k - 1);*/
-
 	IloCplex cplex(model);
-	double cplextotal = 7813;
+	double cplextotal = 60 * 60 * 2;
 	cplex.setParam(IloCplex::TiLim, cplextotal);
-	cplex.setParam(IloCplex::Threads, 4);
+	cplex.setParam(IloCplex::Threads, 32);
 
 	cplex.use(BendersLazyCallback(env, Z, y, adj, N, k));
 
@@ -407,12 +402,33 @@ void SolveLazy(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, 
 
 	if (success && cplex.isPrimalFeasible())
 	{
+		//transportation cost
+		double trans = 0;
+		double con = 0;
+		double op = 0;
 
-		//double zlp = cplex.getObjValue(); //1
-		//return zlp;
+		//transport cost
+		for (int i = 0; i < N; ++i)
+			for (int j = 0; j < N; ++j)
+				trans += d[i] * cij[i][j] * cplex.getValue(x[i][j]);
 
-		output.push_back(cplex.getMIPRelativeGap());
+		//opening cost
+		for (int i = 0; i < N; ++i)
+			op += f[i] * cplex.getValue(y[i]);
+
+		//connection cost
+		for (int i = 0; i < N; ++i)
+			for (int j = 0; j < N; ++j)
+				if (adj[i][j] == 1)
+					con += M *conij[i][j] * cplex.getValue(Z[i][j]);
+
+		output.push_back(trans);
+		output.push_back(con);
+		output.push_back(op);
 		output.push_back(cplex.getObjValue());
+		output.push_back(cplex.getMIPRelativeGap());
+
+		//resultfile << "fileID\t" << "Trans\t" << "Con\t" << "Open\t" << "Z\t" << "Gap%\t" << "Time" << endl;
 	}
 
 	else
@@ -420,6 +436,10 @@ void SolveLazy(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, 
 		output.push_back(-1.0);
 		output.push_back(-1.0);
 	}
+
+	cplex.end();
+	model.end();
+	env.end();
 
 }
 
@@ -544,7 +564,7 @@ void SolveMTZ(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, i
 				model.add(u[i] - u[j] + k*Z[i][j] <= k - 1);
 
 	IloCplex cplex(model);
-	double cplextotal = 7813;
+	double cplextotal = 60 * 60 * 2;
 	cplex.setParam(IloCplex::TiLim, cplextotal);
 
 	IloBool success = cplex.solve();
@@ -552,11 +572,33 @@ void SolveMTZ(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, i
 
 	if (success && cplex.isPrimalFeasible())
 	{
-		//double zlp = cplex.getObjValue(); //1
-		//return zlp;
+		//transportation cost
+		double trans = 0;
+		double con = 0;
+		double op = 0;
 
-		output.push_back(cplex.getMIPRelativeGap());
+		//transport cost
+		for (int i = 0; i < N; ++i)
+			for (int j = 0; j < N; ++j)
+				trans += d[i] * cij[i][j] * cplex.getValue(x[i][j]);
+
+		//opening cost
+		for (int i = 0; i < N; ++i)
+			op += f[i] * cplex.getValue(y[i]);
+
+		//connection cost
+		for (int i = 0; i < N; ++i)
+			for (int j = 0; j < N; ++j)
+				if (adj[i][j] == 1)
+					con += M *conij[i][j] * cplex.getValue(Z[i][j]);
+
+		output.push_back(trans);
+		output.push_back(con);
+		output.push_back(op);
 		output.push_back(cplex.getObjValue());
+		output.push_back(cplex.getMIPRelativeGap());
+
+		//resultfile << "fileID\t" << "Trans\t" << "Con\t" << "Open\t" << "Z\t" << "Gap%\t" << "Time" << endl;
 	}
 
 	else
@@ -564,6 +606,10 @@ void SolveMTZ(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, i
 		output.push_back(-1.0);
 		output.push_back(-1.0);
 	}
+
+	cplex.end();
+	model.end();
+	env.end();
 
 }
 
@@ -719,7 +765,7 @@ void SolveFlow(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, 
 				model.add(a[i][j] <= (k - 1)*Z[i][j]);
 
 	IloCplex cplex(model);
-	double cplextotal = 7813;
+	double cplextotal = 60*60*2;
 	cplex.setParam(IloCplex::TiLim, cplextotal);
 
 	IloBool success = cplex.solve();
@@ -728,12 +774,33 @@ void SolveFlow(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, 
 
 	if (success && cplex.isPrimalFeasible())
 	{
-		
-		//double zlp = cplex.getObjValue(); //1
-		//return zlp;
+		//transportation cost
+		double trans = 0;
+		double con = 0;
+		double op = 0;
 
-		output.push_back(cplex.getMIPRelativeGap());
+		//transport cost
+		for (int i = 0; i < N; ++i)
+			for (int j = 0; j < N; ++j)
+				trans += d[i] * cij[i][j] * cplex.getValue(x[i][j]);
+
+		//opening cost
+		for (int i = 0; i < N; ++i)
+			op += f[i] * cplex.getValue(y[i]);
+
+		//connection cost
+		for (int i = 0; i < N; ++i)
+			for (int j = 0; j < N; ++j)
+				if (adj[i][j] == 1)
+					con += M *conij[i][j] * cplex.getValue(Z[i][j]);
+
+		output.push_back(trans);
+		output.push_back(con);
+		output.push_back(op);
 		output.push_back(cplex.getObjValue());
+		output.push_back(cplex.getMIPRelativeGap());
+
+		//resultfile << "fileID\t" << "Trans\t" << "Con\t" << "Open\t" << "Z\t" << "Gap%\t" << "Time" << endl;
 	}
 
 	else
@@ -741,6 +808,10 @@ void SolveFlow(int** cij, int** conij, int** adj, int* d, int* f, int N, int M, 
 		output.push_back(-1.0);
 		output.push_back(-1.0);
 	}
+
+	cplex.end();
+	model.end();
+	env.end();
 
 
 }
@@ -753,26 +824,41 @@ int main()
 	try
 	{
 		int M = 100;
-		string computer = "desktop";
+		string computer = "burakpc";
 		string url;
 
 		if (computer == "hp")
-			url = "C:\\Users\\hp\\Desktop\\son tubitak baţvurusu\\slovenya kod\\cplex tez\\input\\";
+			url = "C:\\Users\\murat\\Desktop\\sensornetwork\\networkoptim\\input\\";
 		else
-			url = "C:\\Users\\elhuseyni\\Desktop\\cplex tez\\input\\";
+			url = "C:\\Users\\bkocuk\\Desktop\\networkoptim\\input\\";
 
-		for (int met = 1; met < 2; ++met) //3 setting: 0-mtz, 1-flow, 2-lazy
+		//select an experiment path
+		int faclb = 3;
+		int facub = 5;
+
+		int metlb = 0;
+		int metub = 2;
+
+		for (int fac = faclb; fac < facub; ++fac) // 10-20-30-40
+		for (int met = metlb; met < metub; ++met) //3 setting: 0-mtz, 1-flow, 2-lazy
 		{
+
+			///////////////////////////////////////////////777
+			int k = 10 * fac;
 			//begin of Node limit loop
+			string iplist2 = "trials-" + to_string(k);
 			string iplist = "trials";
-			string pathloop = url + iplist + ".txt";
+
+			string pathloop = url + iplist2 + ".txt";
+			 
+			//string pathloop = url + iplist + ".txt";
 			//string modeltype = "mtz";
 			//string root = "Rootnode";
 			string method;
 
 			string line;
 			//int k = 10;
-			int k = 10;
+			//int k = 10;
 			int N;
 
 			switch (met)
@@ -791,11 +877,10 @@ int main()
 					break;
 			}
 
-			ofstream resultfile(method +  "_" + to_string(k) + "_" + computer + "_.txt");
-			ofstream resultdetail("Detail_" + method +  "_" + to_string(k) + "_" + computer + "_.txt");
+			ofstream resultfile(method + "_" + to_string(k) + "_" + computer + "_.txt");
 			ifstream fileloop(pathloop);
 
-			resultfile << "fileID\t" << "gap%\t" << "time\t" << "Z_feas\t" << endl;
+			resultfile << "fileID\t" << "Trans\t" << "Con\t" << "Open\t" << "Z\t" << "Gap%\t" << "Time" << endl;
 
 			if (fileloop.is_open())
 			{
@@ -805,7 +890,7 @@ int main()
 					vector<int> V; //7.3.22
 					string filename;
 					istringstream Streamloop(line);
-					Streamloop >> N >> filename;
+					Streamloop >> filename >> N;
 
 					string path = url + iplist + "\\" + filename + "\\" + filename + ".txt";
 					string path2 = url + iplist + "\\" + filename + "\\d.txt";
@@ -860,6 +945,11 @@ int main()
 
 					GetData(file, file2, file3, line, d, f, cij, adj);
 
+					//con=cij
+					for (int i = 0; i < N; i++)
+						for (int j = 0; j < N; j++)
+							conij[i][j] = cij[i][j];
+
 					allpairshort(cij, N); //buradaki hatalar c_ij diagonalleri düţünmediđinden!
 
 					auto startmodel = chrono::steady_clock::now();
@@ -885,9 +975,9 @@ int main()
 					auto end2 = chrono::steady_clock::now();
 					auto diff2 = end2 - startmodel;
 
-					//resultfile << "fileID\t" << "gap%\t" << "time\t" << "Z_feas\t" << endl;
-					resultfile << filename << "\t" << output[0] << "\t" << chrono::duration_cast<chrono::milliseconds>(diff2).count() / 1000 << "\t"
-						<< output[1] << "\t" << endl;
+					resultfile << filename << "\t" << output[0] << "\t" << output[1] << "\t" << output[2] << "\t" << output[3] << "\t" <<
+						output[4] << "\t" << chrono::duration_cast<chrono::milliseconds>(diff2).count() / 1000 << "\t"
+						<< endl;
 
 					//garbage collection
 					delete[] d;
