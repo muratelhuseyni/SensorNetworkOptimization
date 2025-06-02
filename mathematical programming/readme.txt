@@ -33,5 +33,3 @@ Each folder is comprised of three elements:
 Algorithm: Turns unit graphs into graphs through "unit graphs to input.cpp"
 
 Graph and Test Instance Explanation.txt: Brief theoretical explanation about handled graphs and description of instance generation
-
-computational results.txt: at p=10, results of Flow, MTZ and Lazy Callback implementations under GAP%, Time and Z_feassol key performance indicators over graphs
